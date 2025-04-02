@@ -31,3 +31,4 @@ D:\Documents\Работа\Projects\Chat\chat-backend\Chat\Chat\obj\Debug\net8.0\
 D:\Documents\Работа\Projects\Chat\chat-backend\Chat\Chat\obj\Debug\net8.0\Chat.pdb
 D:\Documents\Работа\Projects\Chat\chat-backend\Chat\Chat\obj\Debug\net8.0\Chat.genruntimeconfig.cache
 D:\Documents\Работа\Projects\Chat\chat-backend\Chat\Chat\obj\Debug\net8.0\ref\Chat.dll
+D:\Documents\Работа\Projects\Chat\chat-backend\Chat\Chat\obj\Debug\net8.0\Chat.sourcelink.json

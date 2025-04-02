@@ -1,38 +1,44 @@
-﻿using Chat.Contracts;
+﻿using System.Collections.Concurrent;
+using Chat.Contracts;
 using Chat.Models;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Chat.Hubs;
 
-public interface IChatClient
-{
-    public Task ReceiveMessage(string userName, string message);
-}
-
 public class ChatHub : Hub<IChatClient>, IChatHub
 {
-    private List<UserConnection> _connections = new List<UserConnection>();
+    private static ConcurrentDictionary<string, UserConnection> _connections = new();
     
     public async Task JoinChat(UserConnection connection)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, connection.ChatName);
+        
+        _connections[Context.ConnectionId] = connection;
 
         await Clients.Group(connection.ChatName).ReceiveMessage("System", $"{connection.UserName} joined the chat");
     }
 
-    public async Task SendMessage(string userName, string message)
+    public async Task SendMessage(string message)
     {
-        var connection = _connections.FirstOrDefault(x => x.UserName == userName);
+        _connections.TryGetValue(Context.ConnectionId, out var connection);
         
         if (connection != null)
         {
-            await Clients.Group(connection.ChatName).ReceiveMessage("System", $"{connection.UserName} joined the chat");
+            await Clients.Group(connection.ChatName)
+                .ReceiveMessage(connection.UserName, message);
         }
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        if (_connections.TryRemove(Context.ConnectionId, out var connection))
+        {
+            await Clients.Group(connection.ChatName)
+                .ReceiveMessage("System", $"{connection.UserName} left the chat");
+
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, connection.ChatName);
+        }
         
-        return base.OnDisconnectedAsync(exception);
+        await base.OnDisconnectedAsync(exception);
     }
 }
